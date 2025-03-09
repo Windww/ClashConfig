@@ -44,7 +44,55 @@ dns:
     - tcp://119.29.29.29
     - tcp://223.5.5.5
     - tcp://223.6.6.6
-Proxy:
+proxies:
+# 支持的协议及加密算法示例请查阅 Clash 项目 README 以使用最新格式：https://github.com/Dreamacro/clash/blob/master/README.md
+
+# Shadowsocks 支持的加密方式:
+#   aes-128-gcm aes-192-gcm aes-256-gcm
+#   aes-128-cfb aes-192-cfb aes-256-cfb
+#   aes-128-ctr aes-192-ctr aes-256-ctr
+#   rc4-md5 chacha20-ietf xchacha20
+#   chacha20-ietf-poly1305 xchacha20-ietf-poly1305
+
+# Shadowsocks
+- name: "ss"
+  type: ss
+  server: server
+  port: 443
+  cipher: chacha20-ietf-poly1305
+  password: "password"
+  # udp: true
+
+# Shadowsocks(simple-obfs)
+- name: "ss-obfs"
+  type: ss
+  server: server
+  port: 443
+  cipher: chacha20-ietf-poly1305
+  password: "password"
+  plugin: obfs
+  plugin-opts:
+      mode: tls
+      host: example.com
+
+# Shadowsocks(v2ray-plugin)
+- name: "ss-v2ray"
+  type: ss
+  server: server
+  port: 443
+  cipher: chacha20-ietf-poly1305
+  password: "password"
+  plugin: v2ray-plugin
+  plugin-opts:
+    mode: websocket # no QUIC now
+    # tls: true # wss
+    # skip-cert-verify: true
+    # host: bing.com
+    # path: "/"
+    # mux: true
+    # headers:
+    #   custom: value
+
 # VMess
 - name: "v2ray"
   type: vmess
@@ -61,7 +109,23 @@ Proxy:
   # ws-path: /path
   # ws-headers: #这一行后面不要写东西
   #   Host: v2ray.com # 填写伪装域名
-Proxy Group:
+
+# Trojan
+- name: "trojan"
+  type: trojan
+  server: server
+  port: 443
+  password: password
+  # udp: true
+  # sni: example.com # 填写伪装域名
+  alpn:
+     - h2
+     - http/1.1
+  # skip-cert-verify: true
+
+# 代理组策略
+# 策略组示例请查阅 Clash 项目 README 以使用最新格式：https://github.com/Dreamacro/clash/blob/master/README.md
+proxy-groups:
 
 # url-test 通过指定的 URL 测试并选择延迟最低的节点
 - name: "自动选择快速节点"
@@ -70,6 +134,28 @@ Proxy Group:
     - "v2ray"
   url: 'http://www.gstatic.com/generate_204'
   interval: 300
+
+# fallback 通过指定的 URL 测试并选择可用的节点，当 1 故障不可用时自动切换到 2 以此类推
+# - name: "Fallback"
+#   type: fallback
+#   proxies:
+#     - "1"
+#     - "2"
+#     - "3"
+#     - "4"
+#   url: 'http://www.gstatic.com/generate_204'
+#   interval: 300
+
+# load-balance: 负载均衡
+# - name: "LoadBalance"
+#   type: load-balance
+#   proxies:
+#     - "1"
+#     - "2"
+#     - "3"
+#     - "4"
+#   url: 'http://www.gstatic.com/generate_204'
+#   interval: 300
 
 # 代理节点选择
 - name: "PROXY"
@@ -116,7 +202,9 @@ Proxy Group:
     - "ss-v2ray"
     - "v2ray"
     - "trojan"
-Rule:
+
+# 规则
+rules:
 # Unbreak
 # > Google
 - DOMAIN-SUFFIX,googletraveladservices.com,DIRECT
@@ -1573,6 +1661,7 @@ Rule:
 - GEOIP,CN,DIRECT
 
 - MATCH,Final
+
 # Clash for Windows
 cfw-bypass:
   - qq.com
